@@ -46,7 +46,7 @@ def main():
     moves_viewer_surface_w = timer_surface_w
     moves_viewer_surface_h = 560 - 60 - timer_surface_h
     moves_viewer_surface = pygame.Surface((moves_viewer_surface_w, moves_viewer_surface_h))
-    moves_viewer = MovesViewer(board.state.moves, moves_viewer_surface)
+    moves_viewer = MovesViewer(board, moves_viewer_surface)
 
     running = True
     
@@ -73,6 +73,7 @@ def main():
 
         elif event.type == pygame.MOUSEBUTTONUP:
             pass
+
         elif event.type == pygame.MOUSEBUTTONDOWN:
             abs_mouse_pos = pygame.mouse.get_pos()
             # handle board
@@ -89,6 +90,11 @@ def main():
                     board.select(x, y)
             else:
                 board.state.selected_piece = None
+        
+        elif event.type == pygame.KEYDOWN:
+            match event.key:
+                case pygame.K_r:
+                    board.reset()
 
 
         screen.fill(Color(0,0,0))

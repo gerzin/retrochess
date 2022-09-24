@@ -1,7 +1,4 @@
-from enum import Enum, auto
-from shutil import move
-from tkinter.messagebox import NO
-from turtle import color
+from enum import Enum
 from typing import List, Tuple, Union
 
 class PieceColor(Enum):
@@ -312,7 +309,6 @@ class Board():
         
         self.state.white_turn = not self.state.white_turn
         self.state.last_move = (src, dest)
-        print(self.state.moves)
     
     def __generate_move_name(self, src, dest, castle=None):
 
