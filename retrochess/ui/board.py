@@ -18,6 +18,7 @@ class PieceViewer:
     def __init__(self, **kwargs):
         scale = kwargs.get("scale", (62, 62))
         self.set_path = Config.assets.PIECES / "pixel"
+        self.flipped = kwargs.get("flipped", False)
         self.type_img_white = {
             PieceType.PAWN: load_and_scale(self.set_path / "wP.svg", scale),
             PieceType.KNIGHT.value: load_and_scale(self.set_path / "wN.svg", scale),
@@ -38,12 +39,14 @@ class PieceViewer:
 
     
     def draw_piece(self, piece: Piece, srf: Surface):
-        w, h = srf.get_size()
         pt = piece.type_
+        
         if piece.color == PieceColor.BLACK:
-            srf.blit(self.type_img_black[pt], (0,0))
+            srf.blit(pygame.transform.flip(self.type_img_black[pt], self.flipped, self.flipped), (0,0))
         else:
-            srf.blit(self.type_img_white[pt], (0,0))
+            srf.blit(pygame.transform.flip(self.type_img_white[pt], self.flipped, self.flipped), (0,0))
+        
+        
 
     
 
@@ -70,8 +73,17 @@ class BoardViewer():
     def surface(self):
         return self.__surface
     
+    @surface.setter
+    def surface(self, new_srf):
+        self.__surface = new_srf
+    
+    @property
+    def flipped(self):
+        return self.__flipped
+    
     def flip(self):
         self.__flipped = not self.__flipped
+        self.piece_viewer.flipped = self.__flipped
     
     @property
     def board(self) -> Board:
@@ -101,6 +113,7 @@ class BoardViewer():
                 if p:= board[i][j]:
                     subs = Surface.subsurface(self.surface, self.__coords_to_square_rect(i,j))
                     self.piece_viewer.draw_piece(p, subs)
+
 
     def __draw_highlited_cell(self):
         if self.mouse_pos and self.track_mouse:
@@ -152,6 +165,9 @@ class BoardViewer():
         self.__draw_last_move()
         self.__draw_possible_moves()
         self.__draw_pieces()
+
+        if self.flipped:
+            self.surface = pygame.transform.flip(self.surface, True, True)
     
 
     def mouse_coords_to_board_cell(self, mouse_coords) -> Tuple[int, int]:
@@ -166,4 +182,6 @@ class BoardViewer():
         x, y = mouse_coords
         x //= self.square_size
         y //= self.square_size
-        return (int(x),int(y))
+        x = int(x)
+        y = int(y)
+        return (7-x, 7-y) if self.flipped else (x,y)

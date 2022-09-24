@@ -5,6 +5,7 @@ from board import Board
 
 from ui.config import Config
 
+
 class MovesViewer():
     def __init__(self, board: Board, surface:Surface) -> None:
         self.board = board
@@ -12,6 +13,17 @@ class MovesViewer():
         self.font = pygame.font.Font(Config.assets.FONTS / "font0.ttf", 14)
         self.moves_subs = Surface.subsurface(self.surface, (1, 1, self.surface.get_width() - 1, self.surface.get_height() - 1))
         self.max_fitting_moves = self.moves_subs.get_height() // self.font.get_height()
+        self.init_banner()
+    
+    def init_banner(self):
+        self.banner_infos = []
+        text_0 = self.font.render("Make a move to", True, Config.color.TEXT_COLOR)
+        text_1 = self.font.render("start a new game", True, Config.color.TEXT_COLOR)
+        text_press = self.font.render("press:", True, Config.color.TEXT_COLOR)
+        commands = [self.font.render(x, True, Config.color.TEXT_COLOR) for x in "* r - reset,* f - flip".split(",")]
+        
+        for x in (text_0, text_1, text_press, *commands):
+            self.banner_infos.append(x)
     
     @property
     def surface(self):
@@ -41,11 +53,15 @@ class MovesViewer():
             subsurface.blit(move_txt, (10, i * fh))
         
     def __show_banner(self):
-        text_0 = self.font.render("Make a move to", True, Config.color.TEXT_COLOR)
-        text_1 = self.font.render("start a new game", True, Config.color.TEXT_COLOR)
-        text_coord = text_0.get_rect()
-        self.surface.blit(text_0, (10,10))
-        self.surface.blit(text_1, (10, 10 + text_coord.height))
+        
+        for i, text in enumerate(self.banner_infos[:2]):
+            self.surface.blit(text, (10,10+i*self.font.get_height()))
+        
+        for i, text in enumerate(self.banner_infos[2:], start=3):
+            self.surface.blit(text, (10,12+i*self.font.get_height()))
+        
+
+        
     
     
     def __moves_to_text(self, move):

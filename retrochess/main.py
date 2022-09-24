@@ -78,8 +78,11 @@ def main():
             abs_mouse_pos = pygame.mouse.get_pos()
             # handle board
             mouse_pos = mouse_to_surface(abs_mouse_pos, BOARD_OFFSET)
-            
-            if board_surface.get_rect().collidepoint(mouse_pos):
+            # right click unselect things
+            if event.button == pygame.BUTTON_RIGHT:
+                board.state.selected_piece = None
+
+            elif board_surface.get_rect().collidepoint(mouse_pos):
                 (y,x) = board_viewer.mouse_coords_to_board_cell(mouse_pos)
                 if board.state.selected_piece != None:
                     if board.can_move(board.state.selected_piece, (x,y)): # check if that's a move
@@ -95,6 +98,8 @@ def main():
             match event.key:
                 case pygame.K_r:
                     board.reset()
+                case pygame.K_f:
+                    board_viewer.flip()
 
 
         screen.fill(Color(0,0,0))
