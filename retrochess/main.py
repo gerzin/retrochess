@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-
-from shutil import move
 import pygame
 import atexit
 from board import Board

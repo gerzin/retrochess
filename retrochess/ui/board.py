@@ -3,8 +3,8 @@ import pygame
 from board import Board, Piece, PieceColor, PieceType
 from pygame.surface import Surface
 from math import floor
-from pygame.color import Color
 from pathlib import Path
+from pygame.transform import flip as Flip
 
 from ui.config import Config
 
@@ -42,20 +42,25 @@ class PieceViewer:
         pt = piece.type_
         
         if piece.color == PieceColor.BLACK:
-            srf.blit(pygame.transform.flip(self.type_img_black[pt], self.flipped, self.flipped), (0,0))
+            srf.blit(Flip(self.type_img_black[pt], self.flipped, self.flipped), (0,0))
         else:
-            srf.blit(pygame.transform.flip(self.type_img_white[pt], self.flipped, self.flipped), (0,0))
+            srf.blit(Flip(self.type_img_white[pt], self.flipped, self.flipped), (0,0))
         
         
 
+def alternate_colors(*args):
+    a = [*args]
+    while True:
+        for ar in a:
+            yield a
     
 
 class BoardViewer():
     
-    def __init__(self, board: Board, surface: Surface, flipped:bool = False) -> None:
+    def __init__(self, board: Board, surface: Surface) -> None:
         self.__board: Board = board
         self.__surface = surface
-        self.__flipped = flipped
+        self.__flipped = False
 
         self.square_size = surface.get_width() / 8
 
@@ -63,6 +68,13 @@ class BoardViewer():
         self.dark_color = Config.color.DARK
 
         self.piece_viewer = PieceViewer(scale=(surface.get_width() / 8, surface.get_height() / 8))
+        # font for drawing the letters
+        self.font = pygame.font.Font(Config.assets.FONTS / "font0.ttf", int(self.square_size / 6))
+        colors = [Config.color.LIGHT, Config.color.DARK]
+        self.square_letters = [self.font.render(x, True, colors[i%2]) for i,x in enumerate("abcdefgh")]
+        self.square_letters_flipped = [Flip(self.font.render(x, True, colors[(i+1)%2]), True, True) for i,x in enumerate("abcdefgh")]
+        self.square_numbers = [self.font.render(x, True, colors[i%2]) for i,x in enumerate("87654321")]
+        self.square_numbers_flipped = [Flip(self.font.render(x, True, colors[i%2]), True, True) for i,x in enumerate("12345678")]
 
         # mouse related variables
         self.track_mouse = True # if True highlight the cell under the mouse
@@ -137,6 +149,36 @@ class BoardViewer():
         if lm:
             Surface.subsurface(self.surface, self.__coords_to_square_rect(*lm[0])).fill(Config.color.LAST_MOVE)
             Surface.subsurface(self.surface, self.__coords_to_square_rect(*lm[1])).fill(Config.color.LAST_MOVE)
+    
+    def __draw_coordinates(self):
+        
+
+        
+        
+        if self.flipped:
+            letter_pos_x = self.square_size - self.square_letters_flipped[0].get_width() - 2
+            letter_pos_y = 2
+            number_pos_y = self.square_size-self.font.get_height() - 2
+            
+            for i in range(8):
+                letter = self.square_letters_flipped[i]
+                number = self.square_numbers_flipped[7-i]
+                subs = Surface.subsurface(self.surface, self.__coords_to_square_rect(0,i))
+                subs.blit(letter,(letter_pos_x, letter_pos_y))
+                
+                subs = Surface.subsurface(self.surface, self.__coords_to_square_rect(i,0))
+                subs.blit(number,(2, number_pos_y))
+
+        else:
+            letter_pos_y = self.square_size - self.font.get_height() - 2
+            number_pos_x = self.square_size - self.square_letters[0].get_width() - 2
+            for i in range(8):
+                letter = self.square_letters[i]
+                number = self.square_numbers[i]
+                subs = Surface.subsurface(self.surface, self.__coords_to_square_rect(7,i))
+                subs.blit(letter ,(2, letter_pos_y))
+                subs = Surface.subsurface(self.surface, self.__coords_to_square_rect(i,7))
+                subs.blit(number,(number_pos_x, 2))
                 
 
     
@@ -164,10 +206,11 @@ class BoardViewer():
         self.__draw_selected_cell()
         self.__draw_last_move()
         self.__draw_possible_moves()
+        self.__draw_coordinates()
         self.__draw_pieces()
 
         if self.flipped:
-            self.surface = pygame.transform.flip(self.surface, True, True)
+            self.surface = Flip(self.surface, True, True)
     
 
     def mouse_coords_to_board_cell(self, mouse_coords) -> Tuple[int, int]:
