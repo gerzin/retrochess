@@ -17,6 +17,8 @@ letter_to_type = {
     'k' : PieceType.KING
 }
 
+type_to_letter = {v: k for k, v in letter_to_type.items()}
+
 def char_to_piece_list(c: str) -> List[Piece]:
     if c.isdigit():
         return [None]*int(c)
@@ -28,7 +30,12 @@ def char_to_piece_list(c: str) -> List[Piece]:
         
         pt = letter_to_type[c.lower()]
         return[Piece(pt, color)]
-        
+
+def piece_to_char(p: Piece):
+    if p.color == PieceColor.BLACK:
+        return type_to_letter[p.type]
+    else:
+        return type_to_letter[p.type].upper()
 
 def fen_to_board(fen_str: str):
     rows, rest = fen_str.split(" ")
@@ -38,4 +45,22 @@ def fen_to_board(fen_str: str):
 
 
 def board_to_fen(board) -> str:
-    pass
+    fen_str = ""
+    rows = []
+    for row in board.board:
+        row_fen = ""
+        counter = 0
+        for piece in row:
+            if piece:
+                fen_str += piece_to_char(piece)
+                if counter:
+                    row_fen += str(counter)
+                    counter = 0
+            else:
+                counter += 1
+        if counter:
+            row_fen += str(counter)
+        rows.append(row_fen)
+    return "/".join(rows)
+        
+

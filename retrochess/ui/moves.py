@@ -20,7 +20,7 @@ class MovesViewer():
         text_0 = self.font.render("Make a move to", True, Config.color.TEXT_COLOR)
         text_1 = self.font.render("start a new game", True, Config.color.TEXT_COLOR)
         text_press = self.font.render("press:", True, Config.color.TEXT_COLOR)
-        commands = [self.font.render(x, True, Config.color.TEXT_COLOR) for x in "* r - reset,* f - flip".split(",")]
+        commands = [self.font.render(x, True, Config.color.TEXT_COLOR) for x in "* r - reset,* f - flip,* x - exit".split(",")]
         
         for x in (text_0, text_1, text_press, *commands):
             self.banner_infos.append(x)

@@ -81,6 +81,9 @@ class GameState():
             self.moves.append((move, None))
         else:
             self.moves[-1] = (self.moves[-1][0], move)
+    
+    def game_started(self):
+        return len(self.moves) > 0
 
 class Board():
     

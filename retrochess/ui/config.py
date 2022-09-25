@@ -4,7 +4,7 @@ from pathlib import Path
 class Config:
     class Color:
         LIGHT = Color(168, 133, 50)
-        DARK = Color(207, 103, 29)
+        DARK = Color(183, 87, 13)
         HIGHLIGHT = Color(179, 154, 75)
         SELECTION = Color(255, 51, 0)
         LAST_MOVE = Color(255, 51, 100)

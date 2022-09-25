@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+from os import environ
+
+from fen import board_to_fen
+from ui.fen import FenViewer
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
 import pygame
 import atexit
 from board import Board
@@ -14,6 +20,7 @@ assert BOARD_SIZE % 8 == 0
 BOARD_OFFSET = (2*Config.SPACING, 2*Config.SPACING)
 TIMER_OFFSET = (4*Config.SPACING + BOARD_SIZE, 2*Config.SPACING)
 MOVES_OFFSET = (TIMER_OFFSET[0], TIMER_OFFSET[1] + BOARD_SIZE / 4 + 20)
+FEN_OFFSET = (BOARD_OFFSET[0], BOARD_SIZE + 40)
 
 def mouse_to_surface(mouse_pos, surface_offset):
     return (mouse_pos[0]-surface_offset[0], mouse_pos[1]-surface_offset[1])
@@ -24,7 +31,7 @@ def main():
     pygame.init()
     atexit.register(pygame.quit)
 
-    screen = pygame.display.set_mode((850, 560))
+    screen = pygame.display.set_mode((850, 600))
     pygame.display.set_caption('RetroChess')
 
     # board creation
@@ -33,12 +40,17 @@ def main():
     board = Board()
     board_viewer = BoardViewer(board, board_surface)
 
+    # fen creation
+    fen_surface_w = board_size
+    fen_surface_h = 20
+    fen_surface = pygame.Surface((fen_surface_w, fen_surface_h))
+    fen_viewer = FenViewer(board, fen_surface)
+
     # timer creation
     timer_surface_w = (board_size) / 2
     timer_surface_h = (board_size) / 4
     timer_surface = pygame.Surface((timer_surface_w, timer_surface_h))
-
-    timer_viewer = TimerViewer(timer_surface)
+    timer_viewer = TimerViewer(board, timer_surface)
 
     # moves viewer creation
     moves_viewer_surface_w = timer_surface_w
@@ -65,7 +77,11 @@ def main():
             else:
                 board_viewer.on_mouse_off(mouse_pos)
             # handle timer
-
+            mouse_pos = mouse_to_surface(abs_mouse_pos, TIMER_OFFSET)
+            if timer_surface.get_rect().collidepoint(mouse_pos):
+                timer_viewer.on_mouse_on(mouse_pos)
+            else:
+                timer_viewer.on_mouse_off(mouse_pos)
             # handle moves history
 
 
@@ -98,15 +114,20 @@ def main():
                     board.reset()
                 case pygame.K_f:
                     board_viewer.flip()
+                case pygame.K_x:
+                    running = False
+                    continue
 
 
         screen.fill(Color(0,0,0))
         # updates
         board_viewer.update()
+        fen_viewer.update()
         timer_viewer.update()
         moves_viewer.update()
 
         screen.blit(board_viewer.surface, BOARD_OFFSET)
+        screen.blit(fen_viewer.surface, FEN_OFFSET)
         screen.blit(timer_viewer.surface, TIMER_OFFSET)
         screen.blit(moves_viewer.surface, MOVES_OFFSET)
         pygame.display.update()
