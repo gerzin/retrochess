@@ -1,4 +1,5 @@
 import itertools
+from select import select
 
 class InvalidFexException(Exception):
     pass
@@ -33,9 +34,11 @@ def char_to_piece_list(c: str) -> List[Piece]:
 
 def piece_to_char(p: Piece):
     if p.color == PieceColor.BLACK:
-        return type_to_letter[p.type]
+        retval = type_to_letter[p.type]
     else:
-        return type_to_letter[p.type].upper()
+        retval = type_to_letter[p.type].upper()
+    print(f"{retval=}")
+    return retval
 
 def fen_to_board(fen_str: str):
     rows, rest = fen_str.split(" ")
@@ -45,14 +48,13 @@ def fen_to_board(fen_str: str):
 
 
 def board_to_fen(board) -> str:
-    fen_str = ""
     rows = []
     for row in board.board:
         row_fen = ""
         counter = 0
         for piece in row:
             if piece:
-                fen_str += piece_to_char(piece)
+                row_fen += piece_to_char(piece)
                 if counter:
                     row_fen += str(counter)
                     counter = 0
@@ -62,5 +64,11 @@ def board_to_fen(board) -> str:
             row_fen += str(counter)
         rows.append(row_fen)
     return "/".join(rows)
+
+
+if __name__ == '__main__':
+    b = Board()
+    print(type_to_letter)
+    print(board_to_fen(b))
         
 

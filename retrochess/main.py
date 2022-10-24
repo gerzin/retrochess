@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 from os import environ
-
-from fen import board_to_fen
-from ui.fen import FenViewer
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
+from ui.fen import FenViewer
 import pygame
 import atexit
 from board import Board
@@ -22,7 +20,8 @@ TIMER_OFFSET = (4*Config.SPACING + BOARD_SIZE, 2*Config.SPACING)
 MOVES_OFFSET = (TIMER_OFFSET[0], TIMER_OFFSET[1] + BOARD_SIZE / 4 + 20)
 FEN_OFFSET = (BOARD_OFFSET[0], BOARD_SIZE + 40)
 
-def mouse_to_surface(mouse_pos, surface_offset):
+def mouse_to_surface(surface_offset):
+    mouse_pos = pygame.mouse.get_pos()
     return (mouse_pos[0]-surface_offset[0], mouse_pos[1]-surface_offset[1])
 
 
@@ -69,15 +68,14 @@ def main():
 
         # dispatch the events
         if event.type == pygame.MOUSEMOTION:
-            abs_mouse_pos = pygame.mouse.get_pos()
             # handle board
-            mouse_pos = mouse_to_surface(abs_mouse_pos, BOARD_OFFSET)
+            mouse_pos = mouse_to_surface(BOARD_OFFSET)
             if board_surface.get_rect().collidepoint(mouse_pos):
-                board_viewer.on_mouse_on(mouse_pos)
+                board_viewer.on_mouse_on(mouse_pos)                
             else:
                 board_viewer.on_mouse_off(mouse_pos)
             # handle timer
-            mouse_pos = mouse_to_surface(abs_mouse_pos, TIMER_OFFSET)
+            mouse_pos = mouse_to_surface(TIMER_OFFSET)
             if timer_surface.get_rect().collidepoint(mouse_pos):
                 timer_viewer.on_mouse_on(mouse_pos)
             else:
@@ -86,12 +84,25 @@ def main():
 
 
         elif event.type == pygame.MOUSEBUTTONUP:
-            pass
+            mouse_pos = mouse_to_surface(BOARD_OFFSET)
+            # handle board
+            if event.button == pygame.BUTTON_LEFT:
+                board_viewer.set_dragging(False)
+
+                if board_surface.get_rect().collidepoint(mouse_pos) and board.state.selected_piece:
+                    (y,x) = board_viewer.mouse_coords_to_board_cell(mouse_pos)
+                    if board.can_move(board.state.selected_piece, (x,y)): # check if that's a move
+                        board.move(board.state.selected_piece, (x,y))
+                    else:
+                        #board.select(x, y)
+                        if board.state.selected_piece != (x,y):
+                            board.state.selected_piece = None
+                else:
+                    board.state.selected_piece = None
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            abs_mouse_pos = pygame.mouse.get_pos()
             # handle board
-            mouse_pos = mouse_to_surface(abs_mouse_pos, BOARD_OFFSET)
+            mouse_pos = mouse_to_surface(BOARD_OFFSET)
             # right click unselect things
             if event.button == pygame.BUTTON_RIGHT:
                 board.state.selected_piece = None
@@ -103,8 +114,10 @@ def main():
                         board.move(board.state.selected_piece, (x,y))
                     else:
                         board.select(x, y)
+                        board_viewer.set_dragging(False)
                 else:
                     board.select(x, y)
+                    board_viewer.set_dragging(True)
             else:
                 board.state.selected_piece = None
         
@@ -126,10 +139,13 @@ def main():
         timer_viewer.update()
         moves_viewer.update()
 
-        screen.blit(board_viewer.surface, BOARD_OFFSET)
         screen.blit(fen_viewer.surface, FEN_OFFSET)
         screen.blit(timer_viewer.surface, TIMER_OFFSET)
         screen.blit(moves_viewer.surface, MOVES_OFFSET)
+        screen.blit(board_viewer.surface, BOARD_OFFSET)
+        #if board_viewer.piece_dragging_surface:
+        #    screen.blit(board_viewer.piece_dragging_surface, pygame.mouse.get_pos())
+
         pygame.display.update()
         
     

@@ -62,7 +62,7 @@ class BoardViewer():
         self.__surface = surface
         self.__flipped = False
 
-        self.square_size = surface.get_width() / 8
+        self.square_size = int(surface.get_width() / 8)
 
         self.light_color = Config.color.LIGHT
         self.dark_color = Config.color.DARK
@@ -80,6 +80,7 @@ class BoardViewer():
         self.track_mouse = True # if True highlight the cell under the mouse
         self.mouse_pos = None
         self.show_selected_cell = True
+        self.piece_dragging = False
     
     @property
     def surface(self):
@@ -96,10 +97,19 @@ class BoardViewer():
     def flip(self):
         self.__flipped = not self.__flipped
         self.piece_viewer.flipped = self.__flipped
+        self.piece_dragging = False
     
     @property
     def board(self) -> Board:
         return self.__board
+    
+    def set_dragging(self, val:bool):
+        """Set the state of the piece dragging.
+
+        Args:
+            val (bool): True if the user is dragging a piece, False otherwise.
+        """
+        self.piece_dragging = val
     
     def __draw_grid(self):
         srf = self.surface
@@ -126,7 +136,6 @@ class BoardViewer():
                     subs = Surface.subsurface(self.surface, self.__coords_to_square_rect(i,j))
                     self.piece_viewer.draw_piece(p, subs)
 
-
     def __draw_highlited_cell(self):
         if self.mouse_pos and self.track_mouse:
             i,j = self.mouse_coords_to_board_cell(self.mouse_pos)
@@ -151,10 +160,7 @@ class BoardViewer():
             Surface.subsurface(self.surface, self.__coords_to_square_rect(*lm[1])).fill(Config.color.LAST_MOVE)
     
     def __draw_coordinates(self):
-        
 
-        
-        
         if self.flipped:
             letter_pos_x = self.square_size - self.square_letters_flipped[0].get_width() - 2
             letter_pos_y = 2
@@ -208,7 +214,7 @@ class BoardViewer():
         self.__draw_possible_moves()
         self.__draw_coordinates()
         self.__draw_pieces()
-
+        
         if self.flipped:
             self.surface = Flip(self.surface, True, True)
     

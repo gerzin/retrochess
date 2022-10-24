@@ -8,7 +8,7 @@ class FenViewer:
     def __init__(self, board: Board, surface: Surface) -> None:
         self.__surface = surface
         self.board = board
-        self.font = pygame.font.Font(Config.assets.FONTS / "font0.ttf", int(self.__surface.get_height() - 4))
+        self.font = pygame.font.Font(Config.assets.FONTS / "font0.ttf", 8)
         self.fen_string = f"FEN: {board_to_fen(self.board)}"
         self.last_move_len = None
     
